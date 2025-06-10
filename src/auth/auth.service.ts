@@ -34,7 +34,6 @@ export class AuthService {
         mode: string,
     ): Promise<ApiResponse<void>> {
         try {
-            // 이메일 중복 체크
             const userSnapshot = await this.firebaseService.db
                 .ref('users')
                 .orderByChild('emailId')
@@ -46,6 +45,14 @@ export class AuthService {
                     statusCode: HttpStatus.BAD_REQUEST,
                     message: '이미 등록된 이메일입니다.',
                     error: 'DUPLICATE_EMAIL',
+                });
+            }
+
+            if (!userSnapshot.exists() && mode === 'reset') {
+                throw new BadRequestException({
+                    statusCode: HttpStatus.BAD_REQUEST,
+                    message: '회원가입 되지 않은 이메일입니다.',
+                    error: 'NO_SIGNUP_EMAIL',
                 });
             }
 
@@ -177,6 +184,47 @@ export class AuthService {
         } catch (error) {
             this.logger.error('Email verification error:', error);
 
+            if (
+                error instanceof BadRequestException ||
+                error instanceof ForbiddenException ||
+                error instanceof NotFoundException
+            ) {
+                throw error;
+            }
+
+            if (error.code === 'PERMISSION_DENIED') {
+                throw new ForbiddenException({
+                    statusCode: HttpStatus.FORBIDDEN,
+                    message: '데이터베이스 접근이 거부되었습니다.',
+                    error: 'PERMISSION_DENIED',
+                });
+            }
+
+            throw new InternalServerErrorException({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                message: '이메일 인증 중 오류가 발생했습니다.',
+                error: 'INTERNAL_SERVER_ERROR',
+            });
+        }
+    }
+
+    async updatePassword(
+        email: string,
+        password: string,
+    ): Promise<ApiResponse<void>> {
+        try {
+            const userRecord = await admin.auth().getUserByEmail(email);
+            await admin.auth().updateUser(userRecord.uid, {
+                password: password,
+            });
+            const dbRef = admin.database().ref(`users/${userRecord.uid}`);
+            await dbRef.update({ password: password });
+            return {
+                statusCode: HttpStatus.OK,
+                message: '비밀번호가 재설정 되었습니다!',
+            };
+        } catch (error) {
+            this.logger.error('Password reset error:', error);
             if (
                 error instanceof BadRequestException ||
                 error instanceof ForbiddenException ||
