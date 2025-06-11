@@ -242,7 +242,7 @@ export class AuthService {
 
             throw new InternalServerErrorException({
                 statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-                message: '이메일 인증 중 오류가 발생했습니다.',
+                message: '비밀번호 재설정 중 오류가 발생했습니다.',
                 error: 'INTERNAL_SERVER_ERROR',
             });
         }
