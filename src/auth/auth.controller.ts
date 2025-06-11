@@ -48,7 +48,7 @@ export class AuthController {
     @Post('verify')
     async verifyEmailWithAuthNumber(
         @Body() emailAndAuthData: ReadEmailAuthDto,
-    ): Promise<ApiResponse<{ verified: boolean }>> {
+    ): Promise<ApiResponse<void>> {
         try {
             const { email, mode, authNumber } = emailAndAuthData;
 

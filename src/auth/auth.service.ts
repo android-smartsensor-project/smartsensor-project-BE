@@ -123,7 +123,7 @@ export class AuthService {
         email: string,
         mode: string,
         authNumber: string,
-    ): Promise<ApiResponse<{ verified: boolean }>> {
+    ): Promise<ApiResponse<void>> {
         try {
             const collectionByMode =
                 mode === 'signup' ? 'email_verifications' : 'password_reset';
@@ -179,7 +179,6 @@ export class AuthService {
             return {
                 statusCode: HttpStatus.OK,
                 message: '이메일 인증이 완료되었습니다.',
-                data: { verified: true },
             };
         } catch (error) {
             this.logger.error('Email verification error:', error);
