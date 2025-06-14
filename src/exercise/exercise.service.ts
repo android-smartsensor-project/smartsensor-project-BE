@@ -10,6 +10,7 @@ import {
 import { ApiResponse } from 'src/common/types/ApiResponse';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { calcKcal, calcPointsBasedPolicy } from './utils/calculator';
+import { ExerciseResult } from './types/ExerciseResult';
 
 @Injectable()
 export class ExerciseService {
@@ -46,7 +47,7 @@ export class ExerciseService {
         velocity: number,
         date: number,
         movetime: number,
-    ): Promise<ApiResponse<void>> {
+    ): Promise<ApiResponse<ExerciseResult>> {
         const userRef = FirebaseService.db.ref(`users/${uid}`);
         const userSnapshot = await userRef.once('value');
 
@@ -104,14 +105,30 @@ export class ExerciseService {
             );
             const kcal = calcKcal(velocity, userInfo.weight, movetime);
 
-            await FirebaseService.db
-                .ref(
-                    `exercise/${uid}/${year}${month}${day}/${hour}${minute}${seconds}${milliseconds}`,
-                )
-                .set({ velocity, points, kcal });
+            // 운동 데이터를 트랜잭션으로 저장
+            const exerciseRef = FirebaseService.db.ref(
+                `exercise/${uid}/${year}${month}${day}/${hour}${minute}${seconds}${milliseconds}`
+            );
+
+            await exerciseRef.transaction((currentData) => {
+                if (currentData === null) {
+                    return {
+                        velocity,
+                        points,
+                        kcal
+                    };
+                }
+                return currentData;
+            });
 
             return {
                 statusCode: HttpStatus.OK,
+                message: "운동 데이터가 성공적으로 처리되었습니다.",
+                data: {
+                    velocity,
+                    points,
+                    kcal
+                }
             };
         } catch (error) {
             if (error instanceof HttpException) {

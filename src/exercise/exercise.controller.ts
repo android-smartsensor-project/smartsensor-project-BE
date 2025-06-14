@@ -2,6 +2,7 @@ import { Body, Controller, Post, HttpException, HttpStatus } from '@nestjs/commo
 import { ExerciseService } from './exercise.service';
 import { ExerciseDataDto } from './dto/exercise-data.dto';
 import { ApiResponse } from 'src/common/types/ApiResponse';
+import { ExerciseResult } from './types/ExerciseResult';
 
 @Controller('exercise')
 export class ExerciseController {
@@ -10,7 +11,7 @@ export class ExerciseController {
     @Post('trace')
     async sendUserActivityTrace(
         @Body() exerciseData: ExerciseDataDto,
-    ): Promise<ApiResponse<void>> {
+    ): Promise<ApiResponse<ExerciseResult>> {
 		const {uid, velocity, date, movetime} = exerciseData;
 		try {
 			return await this.exerciseService.sendUserActivityTrace(uid, velocity, date, movetime);
