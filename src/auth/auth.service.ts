@@ -11,7 +11,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 import * as admin from 'firebase-admin';
 import { FirebaseService } from 'src/firebase/firebase.service';
-import { createSHA256Hash } from 'src/utils/createSHA256Hash';
+import { createSHA256Hash } from 'src/auth/utils/createSHA256Hash';
 
 interface ApiResponse<T> {
     statusCode: number;
@@ -26,7 +26,6 @@ export class AuthService {
     constructor(
         private readonly mailerService: MailerService,
         private configService: ConfigService,
-        private readonly firebaseService: FirebaseService,
     ) {}
 
     async sendEmailVeficationMail(
@@ -34,7 +33,7 @@ export class AuthService {
         mode: string,
     ): Promise<ApiResponse<void>> {
         try {
-            const userSnapshot = await this.firebaseService.db
+            const userSnapshot = await FirebaseService.db
                 .ref('users')
                 .orderByChild('emailId')
                 .equalTo(to)
@@ -65,7 +64,7 @@ export class AuthService {
                 mode === 'signup' ? 'email_verifications' : 'password_reset';
             const emailToHash = createSHA256Hash(to);
 
-            await this.firebaseService.db
+            await FirebaseService.db
                 .ref(`${collectionByMode}/${emailToHash}`)
                 .set({ authNumber, createdAt, expiresAt });
 
@@ -128,7 +127,7 @@ export class AuthService {
             const collectionByMode =
                 mode === 'signup' ? 'email_verifications' : 'password_reset';
             const emailToHash = createSHA256Hash(email);
-            const verificationRef = this.firebaseService.db.ref(
+            const verificationRef = FirebaseService.db.ref(
                 `${collectionByMode}/${emailToHash}`,
             );
 

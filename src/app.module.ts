@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { FirebaseService } from './firebase/firebase.service';
 import { FirebaseModule } from './firebase/firebase.module';
+import { ExerciseModule } from './exercise/exercise.module';
 
 @Module({
     imports: [
@@ -14,6 +15,7 @@ import { FirebaseModule } from './firebase/firebase.module';
         }),
         AuthModule,
         FirebaseModule,
+        ExerciseModule,
     ],
     controllers: [AppController],
     providers: [AppService, FirebaseService],

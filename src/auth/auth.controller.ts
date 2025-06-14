@@ -1,5 +1,4 @@
 import {
-    BadRequestException,
     Body,
     Controller,
     Post,
@@ -10,12 +9,8 @@ import { ReadEmailDto } from './dto/read-email.dto';
 import { ReadEmailAuthDto } from './dto/read-email-authnumber.dto';
 import { ReadEmailPasswordDto } from './dto/read-email-password.dto';
 import { AuthService } from './auth.service';
+import { ApiResponse } from 'src/common/types/ApiResponse';
 
-interface ApiResponse<T> {
-    statusCode: number;
-    message: string;
-    data?: T;
-}
 
 @Controller('auth')
 export class AuthController {

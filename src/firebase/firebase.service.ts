@@ -4,7 +4,7 @@ import * as admin from 'firebase-admin';
 
 @Injectable()
 export class FirebaseService implements OnModuleInit {
-    public db: admin.database.Database;
+    public static db: admin.database.Database;
 
     constructor(private readonly config: ConfigService) {}
     onModuleInit() {
@@ -22,6 +22,6 @@ export class FirebaseService implements OnModuleInit {
                 databaseURL: this.config.get<string>('FIREBASE_DATABASE_URL'),
             });
         }
-		this.db = admin.database();
+        FirebaseService.db = admin.database();
     }
 }
