@@ -5,7 +5,7 @@ export function calcKcal(velocity: number, weight: number, movetime: number) {
         velocity < 7.0
             ? 1.2 + 0.9 * velocity
             : 0.6 * velocity * velocity - 1.5 * velocity + 8.0;
-    return Math.ceil(met * weight * (movetime / 3600) * 100) / 100;
+    return Math.ceil(met * weight * (movetime / 3600000) * 100) / 100;
 }
 
 export function calcPointsBasedPolicy(

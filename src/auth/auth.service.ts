@@ -6,6 +6,7 @@ import {
     Logger,
     NotFoundException,
     HttpStatus,
+    HttpException,
 } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
@@ -96,25 +97,10 @@ export class AuthService {
                 message: '인증 메일이 성공적으로 전송되었습니다.',
             };
         } catch (error) {
-            this.logger.error(`Failed to send email to ${to}:`, error);
-
-            if (error instanceof BadRequestException) {
-                throw error;
-            }
-
-            if (error.code === 'PERMISSION_DENIED') {
-                throw new ForbiddenException({
-                    statusCode: HttpStatus.FORBIDDEN,
-                    message: '데이터베이스 접근이 거부되었습니다.',
-                    error: 'PERMISSION_DENIED',
-                });
-            }
-
-            throw new InternalServerErrorException({
-                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-                message: '이메일 전송 중 오류가 발생했습니다.',
-                error: 'INTERNAL_SERVER_ERROR',
-            });
+            throw AuthService.commonThrow(
+                error,
+                '이메일 전송 중 오류가 발생했습니다.',
+            );
         }
     }
 
@@ -180,29 +166,10 @@ export class AuthService {
                 message: '이메일 인증이 완료되었습니다.',
             };
         } catch (error) {
-            this.logger.error('Email verification error:', error);
-
-            if (
-                error instanceof BadRequestException ||
-                error instanceof ForbiddenException ||
-                error instanceof NotFoundException
-            ) {
-                throw error;
-            }
-
-            if (error.code === 'PERMISSION_DENIED') {
-                throw new ForbiddenException({
-                    statusCode: HttpStatus.FORBIDDEN,
-                    message: '데이터베이스 접근이 거부되었습니다.',
-                    error: 'PERMISSION_DENIED',
-                });
-            }
-
-            throw new InternalServerErrorException({
-                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-                message: '이메일 인증 중 오류가 발생했습니다.',
-                error: 'INTERNAL_SERVER_ERROR',
-            });
+            throw AuthService.commonThrow(
+                error,
+                '이메일 인증 중 오류가 발생했습니다.',
+            );
         }
     }
 
@@ -222,28 +189,33 @@ export class AuthService {
                 message: '비밀번호가 재설정 되었습니다!',
             };
         } catch (error) {
-            this.logger.error('Password reset error:', error);
-            if (
-                error instanceof BadRequestException ||
-                error instanceof ForbiddenException ||
-                error instanceof NotFoundException
-            ) {
-                throw error;
-            }
+            throw AuthService.commonThrow(
+                error,
+                '비밀번호 재설정 중 오류가 발생했습니다.',
+            );
+        }
+    }
 
-            if (error.code === 'PERMISSION_DENIED') {
-                throw new ForbiddenException({
-                    statusCode: HttpStatus.FORBIDDEN,
-                    message: '데이터베이스 접근이 거부되었습니다.',
-                    error: 'PERMISSION_DENIED',
-                });
-            }
-
-            throw new InternalServerErrorException({
-                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-                message: '비밀번호 재설정 중 오류가 발생했습니다.',
-                error: 'INTERNAL_SERVER_ERROR',
+    private static commonThrow(error: Error, message: string): void {
+        if (error instanceof HttpException) {
+            throw error;
+        }
+        if (
+            error &&
+            typeof error === 'object' &&
+            'code' in error &&
+            error.code === 'PERMISSION_DENIED'
+        ) {
+            throw new ForbiddenException({
+                statusCode: HttpStatus.FORBIDDEN,
+                message: '데이터베이스 접근이 거부되었습니다.',
+                error: 'PERMISSION_DENIED',
             });
         }
+        throw new InternalServerErrorException({
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: message,
+            error: 'INTERNAL_SERVER_ERROR',
+        });
     }
 }
