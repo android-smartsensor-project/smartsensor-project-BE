@@ -7,17 +7,38 @@ import {
     HttpException,
     HttpStatus,
     ValidationPipe,
-    BadRequestException,
     Logger,
 } from '@nestjs/common';
 import { ExerciseService } from './exercise.service';
 import { ExerciseDataDto } from './dto/exercise-data.dto';
 import { ApiResponse } from 'src/common/types/ApiResponse';
 import { ExerciseResult } from './types/ExerciseResult';
+import { DailyPointsResponse } from './types/DailyPointsResponse';
 
 @Controller('exercise')
 export class ExerciseController {
     constructor(private readonly exerciseService: ExerciseService) {}
+
+    @Get('points/:id')
+    async getUserDailyPoints(
+        @Param('id') uid:string
+    ): Promise<ApiResponse<DailyPointsResponse>> {
+        try {
+            return await this.exerciseService.getUserDailyPoints(uid);
+        } catch(error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new HttpException(
+                {
+                    statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                    message: '서버 문제로 데이터를 받을 수 없습니다.',
+                    error: 'INTERNAL_SERVER_ERROR',
+                },
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
 
     @Get('info/:id')
     async getUserExerciseRecord(

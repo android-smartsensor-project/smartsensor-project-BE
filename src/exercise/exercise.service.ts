@@ -14,6 +14,7 @@ import { calcKcal, calcPointsBasedPolicy } from './utils/calculator';
 import { ExerciseResult } from './types/ExerciseResult';
 import { ExerciseDataDto } from './dto/exercise-data.dto';
 import { dateStr, timeStr } from 'src/common/utils/dates';
+import { DailyPointsResponse } from './types/DailyPointsResponse';
 
 @Injectable()
 export class ExerciseService {
@@ -74,6 +75,33 @@ export class ExerciseService {
                 message: '활동 기록 조회를 완료했습니다.',
                 data: userData,
             };
+        } catch (error) {
+            throw ExerciseService.commonThrow(error);
+        }
+    }
+
+    async getUserDailyPoints(
+        uid: string,
+    ): Promise<ApiResponse<DailyPointsResponse>> {
+        try {
+            const userRef = FirebaseService.db.ref(`users/${uid}`);
+            const userSnapshot = await userRef.once('value');
+            if (!userSnapshot.exists()) {
+                throw new NotFoundException({
+                    statusCode: HttpStatus.NOT_FOUND,
+                    message: '유저 정보가 없습니다.',
+                    error: 'NOT FOUND USER INFO',
+                });
+            }
+            const userValue = userSnapshot.val();
+            const dailyPoints = userValue.dailyPoints ?? 0;
+            return {
+                statusCode: HttpStatus.OK,
+                message: "포인트를 정상적으로 조회했습니다.",
+                data: {
+                    dailyPoints
+                }
+            }
         } catch (error) {
             throw ExerciseService.commonThrow(error);
         }
@@ -213,7 +241,19 @@ export class ExerciseService {
                 });
             }
             const doingValue = doingSnapshot.val();
+            if (!doingValue) {
+                return {
+                    statusCode: HttpStatus.OK,
+                    message: '활동을 종료합니다.',
+                    data: {
+                        velocity: 0,
+                        points: 0,
+                        kcal: 0,
+                    },
+                };
+            }
             const doingMonths = Object.keys(doingValue);
+            Logger.debug(doingMonths);
             let tmpPoints: number = 0;
             let totalKcal: number = 0;
             let avgVelo: number = 0;
@@ -293,6 +333,8 @@ export class ExerciseService {
                 },
             };
         } catch (error) {
+            Logger.debug(error);
+            Logger.debug(uid);
             throw ExerciseService.commonThrow(error);
         }
     }
