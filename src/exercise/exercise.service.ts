@@ -15,35 +15,10 @@ import { ExerciseResult } from './types/ExerciseResult';
 import { ExerciseDataDto } from './dto/exercise-data.dto';
 import { dateStr, timeStr } from 'src/common/utils/dates';
 import { DailyPointsResponse } from './types/DailyPointsResponse';
+import { pointsPolicy } from 'src/common/constants/pointsPolicy';
 
 @Injectable()
 export class ExerciseService {
-    private static pointsPolicy = {
-        20: {
-            M: [7.0, 9.0],
-            W: [6.8, 8.0],
-        },
-        30: {
-            M: [7.0, 9.0],
-            W: [6.8, 8.0],
-        },
-        40: {
-            M: [6.8, 8.8],
-            W: [6.5, 7.8],
-        },
-        50: {
-            M: [6.5, 8.1],
-            W: [6.0, 7.1],
-        },
-        60: {
-            M: [6.2, 7.4],
-            W: [5.3, 6.3],
-        },
-        70: {
-            M: [5.0, 6.5],
-            W: [4.8, 5.5],
-        },
-    };
     constructor() {}
 
     async getUserExerciseRecord(
@@ -156,7 +131,7 @@ export class ExerciseService {
             const accessTime = timeStr(date);
             const points = calcPointsBasedPolicy(
                 velocity,
-                ExerciseService.pointsPolicy,
+                pointsPolicy,
                 userInfo.birth,
                 userInfo.sex,
             );
@@ -171,6 +146,7 @@ export class ExerciseService {
                         velocity,
                         points,
                         kcal,
+                        movetime
                     };
                 }
                 return currentData;
