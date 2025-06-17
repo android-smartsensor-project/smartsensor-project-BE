@@ -35,14 +35,14 @@ export class ExerciseService {
             if (!snapshot.exists()) {
                 return {
                     statusCode: HttpStatus.OK,
-                    message: '활동 기록이 없습니다. 1',
+                    message: '활동 기록이 없습니다.',
                 };
             }
             const userData = snapshot.val();
             if (!userData) {
                 return {
                     statusCode: HttpStatus.OK,
-                    message: '활동 기록이 없습니다. 2',
+                    message: '활동 기록이 없습니다.',
                 };
             }
             return {
