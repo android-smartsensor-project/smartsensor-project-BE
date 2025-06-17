@@ -72,11 +72,11 @@ export class ExerciseService {
             const dailyPoints = userValue.dailyPoints ?? 0;
             return {
                 statusCode: HttpStatus.OK,
-                message: "포인트를 정상적으로 조회했습니다.",
+                message: '포인트를 정상적으로 조회했습니다.',
                 data: {
-                    dailyPoints
-                }
-            }
+                    dailyPoints,
+                },
+            };
         } catch (error) {
             throw ExerciseService.commonThrow(error);
         }
@@ -146,7 +146,7 @@ export class ExerciseService {
                         velocity,
                         points,
                         kcal,
-                        movetime
+                        interval: movetime / 1000,
                     };
                 }
                 return currentData;
